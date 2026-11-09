@@ -1,0 +1,1 @@
+rm -f ./grade_statistics

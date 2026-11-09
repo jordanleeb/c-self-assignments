@@ -1,0 +1,1 @@
+gcc main.c -o grade_statistics -Wall -Wextra
