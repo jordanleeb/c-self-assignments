@@ -7,6 +7,7 @@
 /* The number of scores must also be between MIN_SCORES and MAX_SCORES.*/
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <ctype.h>
 #include <string.h>
 #include <errno.h>
@@ -48,9 +49,11 @@ static read_status read_line(char *input_buffer, size_t size) {
 
     // clear stdin
     int c;
-    while ((c = getchar()) != '\n' && c != EOF);
+    bool discarded = false;
+    while ((c = getchar()) != '\n' && c != EOF)
+        discarded = true;
 
-    return READ_TOO_LONG;
+    return discarded ? READ_TOO_LONG : READ_OK;
 }
 
 static read_status read_int(int *out, int min, int max) {
@@ -81,7 +84,7 @@ static read_status read_int(int *out, int min, int max) {
     return READ_OK;
 }
 
-void selection_sort(int arr[], int n) {
+static void selection_sort(int arr[], int n) {
     for (int i = 0; i < n - 1; i++) {
         // assume current position holds minimum element
         int min_idx = i;
@@ -100,7 +103,7 @@ void selection_sort(int arr[], int n) {
     } 
 }
 
-double get_avg(int arr[], int n) {
+static double get_avg(int arr[], int n) {
     int sum = 0;
 
     for (int i = 0; i < n; i++) {
@@ -112,7 +115,7 @@ double get_avg(int arr[], int n) {
     return avg;
 }
 
-double get_med(int arr[], int n) {
+static double get_med(int arr[], int n) {
     double med = 0.0;
 
     if (n % 2) {
