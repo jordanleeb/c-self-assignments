@@ -1,1 +1,1 @@
-gcc main.c -o grade_statistics -Wall -Wextra
+gcc main.c -o grade_statistics -Wall -Wextra -Wpedantic -fsanitize=address,undefined

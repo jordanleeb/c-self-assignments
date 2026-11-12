@@ -1,7 +1,14 @@
-/* Converts a temperature from Celsius to Fahrenheit.           */
-/* Displays an error for invalid input and overflowing outputs. */
-#include <stdio.h>
+/*
+ * Reads a temperature in Celsius and prints it in Fahrenheit.
+ * Input must be a finite number with nothing after it. Anything else
+ * (letters, trailing characters, nan, inf, out-of-range values) is
+ * rejected with an error message and the program exits with failure.
+ */
 #include <math.h>
+#include <stdio.h>
+
+#define F_PER_C  (9.0 / 5.0)
+#define F_OFFSET 32.0
 
 int main(void) {
     double celsius = 0.0;
@@ -14,7 +21,7 @@ int main(void) {
         return 1;
     }
 
-    double fahrenheit = celsius * 9.0/5.0 + 32.0;
+    double fahrenheit = celsius * F_PER_C + F_OFFSET;
 
     if (!isfinite(fahrenheit)) {
         fprintf(stderr, "Error: result too large.\n");

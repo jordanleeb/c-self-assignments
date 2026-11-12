@@ -1,1 +1,1 @@
-gcc main.c -o temperature -Wall -Wextra
+gcc main.c -o temperature -Wall -Wextra -Wpedantic -fsanitize=address,undefined

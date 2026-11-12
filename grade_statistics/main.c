@@ -1,20 +1,20 @@
-/* Reports statistics on a set of test scores.                         */
-/* Receives a number of scores to be read followed by a set of scores. */
-/* Outputs the set of score's average, highest, lowest, median, and    */
-/* a sorted version of the set of scores.                              */
-/* Input scores must be a valid integer, and must be between SCORE_MIN */
-/* and SCORE_MAX.                                                      */
-/* The number of scores must also be between MIN_SCORES and MAX_SCORES.*/
+/*
+ * Reads a count (1-100) and that many integer scores (0-100), then prints
+ * the average, highest, lowest, sorted scores, and median.
+ * Invalid input is rejected with an error message and re-prompted.
+ * If input ends (EOF) before all values are read, exits with failure.
+ */
+#include <ctype.h>
+#include <errno.h>
+#include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
-#include <ctype.h>
 #include <string.h>
-#include <errno.h>
 
 // min / max bounds for number of scores
-#define MIN_SCORES 1
-#define MAX_SCORES 100
+#define COUNT_MIN 1
+#define COUNT_MAX 100
 
 // min / max bounds for entered scores
 #define SCORE_MIN 0
@@ -48,7 +48,7 @@ static read_status read_line(char *input_buffer, size_t size) {
         return READ_OK;
 
     // clear stdin
-    int c;
+    int  c;
     bool discarded = false;
     while ((c = getchar()) != '\n' && c != EOF)
         discarded = true;
@@ -66,17 +66,18 @@ static read_status read_int(int *out, int min, int max) {
 
     // convert buffer to an integer
     char *end;
-    errno = 0;
+    errno  = 0;
     long v = strtol(input_buffer, &end, 10);
 
     if (end == input_buffer)
         return READ_INVALID;
 
     // skip whitespace
-    while (isspace((unsigned char)*end)) end++;
+    while (isspace((unsigned char)*end))
+        end++;
 
-
-    if (*end != '\0') return READ_INVALID;
+    if (*end != '\0')
+        return READ_INVALID;
     if (errno == ERANGE || v < min || v > max)
         return READ_RANGE;
 
@@ -97,10 +98,10 @@ static void selection_sort(int arr[], int n) {
         }
 
         // swap minimum element into proper position
-        int temp = arr[i];
-        arr[i] = arr[min_idx];
+        int temp     = arr[i];
+        arr[i]       = arr[min_idx];
         arr[min_idx] = temp;
-    } 
+    }
 }
 
 static double get_avg(int arr[], int n) {
@@ -110,7 +111,7 @@ static double get_avg(int arr[], int n) {
         sum += arr[i];
     }
 
-    double avg = (double) sum / (double) n;
+    double avg = (double)sum / (double)n;
 
     return avg;
 }
@@ -118,67 +119,60 @@ static double get_avg(int arr[], int n) {
 static double get_med(int arr[], int n) {
     double med = 0.0;
 
+    int mid = n / 2;
+
     if (n % 2) {
         // n is odd
-        med = (double) arr[n/2];
+        med = (double)arr[mid];
     } else {
         // n is even
-        med = (double ) (arr[n/2 - 1] + arr[n/2]) / 2;
+        med = (arr[mid - 1] + arr[mid]) / 2.0;
     }
 
     return med;
 }
 
-int main(void) {
-    int scores[MAX_SCORES]; // array for holding scores
-    int num_scores     = 0; // number of scores to receive and process from user
-    int curr_score_idx = 0; // current index in scores array to receive input for
+// returns true if a valid value is stored in *out
+// returns false if input stream is closed (EOF)
+static bool prompt_int(int *out, int min, int max, const char *fmt, ...) {
+    for (;;) {
+        va_list args;
+        va_start(args, fmt);
+        vprintf(fmt, args);
+        va_end(args);
 
-    // read number of scores from user
-    while (!num_scores) {
-        printf("How many scores? ");
-        read_status num_scores_status = read_int(&num_scores, MIN_SCORES, MAX_SCORES);
-
-        switch (num_scores_status) {
-            case READ_OK:
-                break;
-            case READ_EOF:
-                fprintf(stderr, "Error: input stream closed.\n");
-                return EXIT_FAILURE;
-            case READ_TOO_LONG:
-                fprintf(stderr, "Error: input exceeded buffer size.\n");
-                break;
-            case READ_INVALID:
-                fprintf(stderr, "Error: please enter a valid number of scores.\n");
-                break;
-            case READ_RANGE:
-                fprintf(stderr, "Error: please enter a valid number of scores between %d and %d.\n", MIN_SCORES, MAX_SCORES);
-                break;
+        read_status status = read_int(out, min, max);
+        switch (status) {
+        case READ_OK:
+            return true;
+        case READ_EOF:
+            fprintf(stderr, "\nError: input stream closed.\n");
+            return false;
+        case READ_TOO_LONG:
+            fprintf(stderr, "Error: input exceeded buffer size.\n");
+            break;
+        case READ_INVALID:
+            fprintf(stderr, "Error: please enter a valid number.\n");
+            break;
+        case READ_RANGE:
+            fprintf(stderr, "Error: please enter a valid number between %d and %d.\n", min, max);
+            break;
         }
     }
+}
+
+int main(void) {
+    int scores[COUNT_MAX]; // array for holding scores
+    int num_scores = 0;    // number of scores to receive and process from user
+
+    // read number of scores from user
+    if (!prompt_int(&num_scores, COUNT_MIN, COUNT_MAX, "How many scores? "))
+        return EXIT_FAILURE;
 
     // read scores from user
-    while (curr_score_idx < num_scores) {
-        printf("Score %d: ", curr_score_idx + 1);
-        read_status curr_score_status = read_int(&scores[curr_score_idx], SCORE_MIN, SCORE_MAX);
-
-        switch (curr_score_status) {
-            case READ_OK:
-                curr_score_idx++;
-                break;
-            case READ_EOF:
-                fprintf(stderr, "Error: input stream closed.\n");
-                return EXIT_FAILURE;
-            case READ_TOO_LONG:
-                fprintf(stderr, "Error: input exceeded buffer size.\n");
-                break;
-            case READ_INVALID:
-                fprintf(stderr, "Error: please enter a valid score.\n");
-                break;
-            case READ_RANGE:
-                fprintf(stderr, "Error: please enter a valid score between %d and %d.\n", SCORE_MIN, SCORE_MAX);
-                break;
-        }
+    for (int i = 0; i < num_scores; i++) {
+        if (!prompt_int(&scores[i], SCORE_MIN, SCORE_MAX, "Score %d: ", i + 1))
+            return EXIT_FAILURE;
     }
 
     // sort scores using selection sort
@@ -190,7 +184,7 @@ int main(void) {
     printf("Highest: %d\n", scores[num_scores - 1]);
 
     printf("Lowest: %d\n", scores[0]);
-    
+
     printf("Sorted: ");
     for (int i = 0; i < num_scores - 1; i++) {
         printf("%d ", scores[i]);
@@ -199,5 +193,5 @@ int main(void) {
 
     printf("Median: %.1f\n", get_med(scores, num_scores));
 
-    return 0;
+    return EXIT_SUCCESS;
 }
