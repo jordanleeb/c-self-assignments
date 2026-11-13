@@ -143,20 +143,21 @@ static bool prompt_int(int *out, int min, int max, const char *fmt, ...) {
 
         read_status status = read_int(out, min, max);
         switch (status) {
-        case READ_OK:
-            return true;
-        case READ_EOF:
-            fprintf(stderr, "\nError: input stream closed.\n");
-            return false;
-        case READ_TOO_LONG:
-            fprintf(stderr, "Error: input exceeded buffer size.\n");
-            break;
-        case READ_INVALID:
-            fprintf(stderr, "Error: please enter a valid number.\n");
-            break;
-        case READ_RANGE:
-            fprintf(stderr, "Error: please enter a valid number between %d and %d.\n", min, max);
-            break;
+            case READ_OK:
+                return true;
+            case READ_EOF:
+                fprintf(stderr, "\nError: input stream closed.\n");
+                return false;
+            case READ_TOO_LONG:
+                fprintf(stderr, "Error: input exceeded buffer size.\n");
+                break;
+            case READ_INVALID:
+                fprintf(stderr, "Error: please enter a valid number.\n");
+                break;
+            case READ_RANGE:
+                fprintf(stderr, "Error: please enter a valid number between %d and %d.\n", min,
+                        max);
+                break;
         }
     }
 }
