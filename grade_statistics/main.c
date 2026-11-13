@@ -69,6 +69,7 @@ static read_status read_int(int *out, int min, int max) {
     errno  = 0;
     long v = strtol(input_buffer, &end, 10);
 
+    // no valid number entered check
     if (end == input_buffer)
         return READ_INVALID;
 
@@ -76,12 +77,17 @@ static read_status read_int(int *out, int min, int max) {
     while (isspace((unsigned char)*end))
         end++;
 
+    // trailing garbage check
     if (*end != '\0')
         return READ_INVALID;
+
+    // out of given range / under and over flow check
     if (errno == ERANGE || v < min || v > max)
         return READ_RANGE;
 
+    // write value back
     *out = (int)v;
+
     return READ_OK;
 }
 
